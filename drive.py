@@ -11,14 +11,22 @@ import eventlet.wsgi
 from PIL import Image
 from flask import Flask
 from io import BytesIO
-
-from keras.models import load_model
+import cv2
+from keras.models import load_model, model_from_json
 
 sio = socketio.Server()
 app = Flask(__name__)
 model = None
 prev_image_array = None
 
+
+def crop_image(img, x, y, w, h):
+    y2 = y+h
+    x2 = x+w
+    return img[y:y2, x:x2]
+
+def resize_image(img, width, height):
+    return cv2.resize(img, (width, height), interpolation=cv2.INTER_AREA)
 
 @sio.on('telemetry')
 def telemetry(sid, data):
@@ -33,6 +41,8 @@ def telemetry(sid, data):
         imgString = data["image"]
         image = Image.open(BytesIO(base64.b64decode(imgString)))
         image_array = np.asarray(image)
+        #image_array = resize_image(crop_image(image_array, 0, 50, image_array.shape[1], 80), 200, 66)
+        image_array = crop_image(image_array, 0, 50, image_array.shape[1], 80)
         steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1))
         throttle = 0.2
         print(steering_angle, throttle)
@@ -80,7 +90,11 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    model = load_model(args.model)
+    #model = load_model(args.model)
+    json_file = open(args.model, 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    model = model_from_json(loaded_model_json)
 
     if args.image_folder != '':
         print("Creating image folder at {}".format(args.image_folder))
