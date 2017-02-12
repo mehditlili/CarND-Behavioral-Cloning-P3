@@ -12,7 +12,7 @@ from keras.optimizers import Adam
 from keras.activations import relu
 from keras.layers.convolutional import Convolution2D
 from keras.layers import Lambda
-
+import os
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
@@ -65,10 +65,12 @@ def build_training_data():
         zero_images = []
         for row in log_data:
             if np.fabs(float(row[3])) > 0.00000001:
-                images.append(read_resize(row[0]))
+                image_file = row[0].split(os.sep)[-1]
+                print(image_file)
+                images.append(read_resize(path+"IMG/"+image_file))
                 steering_angles.append(2.0*float(row[3]))
-                images.append(cv2.flip(read_resize(row[0]), 1))
-                steering_angles.append(-1.7 * float(row[3]))
+                images.append(cv2.flip(images[-1], 1))
+                steering_angles.append(-1.5 * float(row[3]))
             else:
                 zero_images.append(read_resize(row[0]))
     print("number of no steering images: %s" % len(zero_images))
