@@ -44,15 +44,17 @@ def read_resize(path):
 
 
 def build_training_data():
+    images = []
+    steering_angles = []
+    base_path = "/home/mehdi/Desktop/"
+    folders = ["one_lap/", "avoiding_edges/", "few_laps/"]
     # Read in the driving log CSV
-    path = "/home/mehdi/Music/"
-    #path = "/home/mehdi/Desktop/carnd_behaviour/"
+    path = base_path + folders[1]
     image_list = glob.glob(path + "IMG/center*.jpg")
     test_image = read_resize(image_list[0])
     height, width, channels = test_image.shape
     draw(test_image, "After preprocessing (crop + resize)")
-    images = []
-    steering_angles = []
+
     print("Image dimensions:", width, height)
     with open(path + 'driving_log.csv') as csvfile:
         log_data = csv.reader(csvfile)
@@ -68,11 +70,12 @@ def build_training_data():
                 image_file = row[0].split(os.sep)[-1]
                 print(image_file)
                 images.append(read_resize(path+"IMG/"+image_file))
-                steering_angles.append(2.0*float(row[3]))
+                steering_angles.append(1.0*float(row[3]))
                 images.append(cv2.flip(images[-1], 1))
-                steering_angles.append(-1.5 * float(row[3]))
+                steering_angles.append(-1.0 * float(row[3]))
             else:
-                zero_images.append(read_resize(row[0]))
+                image_file = row[0].split(os.sep)[-1]
+                zero_images.append(read_resize(path+"IMG/"+image_file))
     print("number of no steering images: %s" % len(zero_images))
     print("number of steering images: %s" % len(images))
     images += zero_images
