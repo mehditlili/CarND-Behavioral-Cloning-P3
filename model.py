@@ -172,7 +172,7 @@ model = create_model(tuple(test_image.shape))
 # Train the model
 # History is a record of training loss and metrics
 history = model.fit_generator(train_generator, samples_per_epoch=2*len(train_samples),
-                              validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=2)
+                              validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=5)
 
 print("Writing model.h5")
 model.save('model.h5')
