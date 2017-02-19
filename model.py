@@ -11,7 +11,7 @@ from sklearn.utils import shuffle
 import matplotlib.pyplot as plt
 from itertools import compress
 from copy import deepcopy
-
+from keras.utils.visualize_util import plot
 
 def resize_image(img, width, height):
     return cv2.resize(img, (width, height), interpolation=cv2.INTER_AREA)
@@ -108,7 +108,7 @@ def create_model(input_shape):
     cnn_model = Sequential()
     cnn_model.add(Cropping2D(cropping=((50, 20), (0, 0)), input_shape=input_shape))
     cnn_model.add(Lambda(lambda x: x / 255.0 - 0.5))
-    cnn_model.add(Convolution2D(6, 5, 5, activation="relu"))
+    cnn_model.add(Convolution2D(6, 5, 5))
     cnn_model.add(MaxPooling2D())
     cnn_model.add(Activation('relu'))
     cnn_model.add(Convolution2D(36, 5, 5, subsample=(2, 2)))
@@ -130,7 +130,6 @@ def create_model(input_shape):
     cnn_model.add(Activation('relu'))
     cnn_model.add(Dense(1))
     cnn_model.compile('adam', loss='mse')
-    #cnn_model = load_model("model_test.h5")
     return cnn_model
 
 
@@ -167,12 +166,13 @@ train_generator = data_generator(train_samples, batch_size=32)
 validation_generator = data_generator(validation_samples, batch_size=32)
 test_image = cv2.imread(samples[0][0])
 
+#model = load_model("model.h5")
 model = create_model(tuple(test_image.shape))
 
 # Train the model
 # History is a record of training loss and metrics
 history = model.fit_generator(train_generator, samples_per_epoch=2*len(train_samples),
-                              validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=3)
+                              validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=2)
 
 print("Writing model.h5")
-model.save('model_test2.h5')
+model.save('model.h5')
